@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Performance Dashboard - Individual Courses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fa;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .course-selector {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .course-selector h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #1e3c72;
+        }
+        
+        .course-group {
+            margin-bottom: 20px;
+        }
+        
+        .course-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .course-group-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .course-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .course-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .course-btn:hover {
+            background: #f5f7fa;
+        }
+        
+        .course-btn.active {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+        }
+        
+        .course-content {
+            display: none;
+        }
+        
+        .course-content.active {
+            display: block;
+        }
+        
+        .section-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .section-card h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #1e3c72;
+        }
+        
+        .section-card h3 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #2a5298;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        th {
+            background: #f5f7fa;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        tr:hover {
+            background: #f9fbfd;
+        }
+        
+        .major-table {
+            margin-top: 20px;
+        }
+        
+        .major-table h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .chart-container {
+            margin-top: 30px;
+            position: relative;
+            height: 400px;
+        }
+        
+        
+        /* Pass rate color classes */
+        .pass-rate-cell {
+            font-weight: bold;
+        }
+        
+        .pass-rate-high {
+            color: #155724;
+        }
+        
+        .pass-rate-good {
+            color: #0c5460;
+        }
+        
+        .pass-rate-medium {
+            color: #856404;
+        }
+        
+        .pass-rate-low {
+            color: #dc3545;
+        }
+        
+        .pass-rate-very-low {
+            color: #721c24;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f5f7fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+        
+        .stat-card .label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Academic Performance Dashboard</h1>
+            <p>Individual Course Analysis - Spring 2024-2025</p>
+        </div>
+        
+        <div class="course-selector">
+            <h2>Select a Course</h2>
+            
+            <div class="course-group">
+                <div class="course-group-label">Computer Science</div>
+                <div class="course-buttons">
+                    <button class="course-btn active" onclick="showCourse('CSCI250')">CSCI 250</button>
+                    <button class="course-btn" onclick="showCourse('CSCI300')">CSCI 300</button>
+                </div>
+            </div>
+            
+            <div class="course-group">
+                <div class="course-group-label">Chemistry</div>
+                <div class="course-buttons">
+                    <button class="course-btn" onclick="showCourse('CHEM160')">CHEM 160</button>
+                    <button class="course-btn" onclick="showCourse('CHEM200')">CHEM 200</button>
+                </div>
+            </div>
+            
+            <div class="course-group">
+                <div class="course-group-label">Mathematics</div>
+                <div class="course-buttons">
+                    <button class="course-btn" onclick="showCourse('MATH160')">MATH 160</button>
+                    <button class="course-btn" onclick="showCourse('MATH161')">MATH 161</button>
+                    <button class="course-btn" onclick="showCourse('MATH210')">MATH 210</button>
+                    <button class="course-btn" onclick="showCourse('MATH220')">MATH 220</button>
+                    <button class="course-btn" onclick="showCourse('MATH225')">MATH 225</button>
+                    <button class="course-btn" onclick="showCourse('MATH270')">MATH 270</button>
+                    <button class="course-btn" onclick="showCourse('MATH310')">MATH 310</button>
+                    <button class="course-btn" onclick="showCourse('MATH375')">MATH 375</button>
+                </div>
+            </div>
+            
+            <div class="course-group">
+                <div class="course-group-label">Physics</div>
+                <div class="course-buttons">
+                    <button class="course-btn" onclick="showCourse('PHYS160')">PHYS 160</button>
+                    <button class="course-btn" onclick="showCourse('PHYS161')">PHYS 161</button>
+                    <button class="course-btn" onclick="showCourse('PHYS220')">PHYS 220</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Course content sections will be generated by JavaScript -->
+        <div id="course-sections"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Hardcoded data from individual course analysis
+        window.courseData = {"CSCI250":[{"school":"SoAS","unique_students":592,"total_enrollments":592,"mean_grade":2.47,"mean_grade_letter":2.47,"pass_rate":73.6,"fail_rate":12.5,"waw_rate":13.9,"grade_gte_2":331,"grade_lt_2":261,"grade_distribution":{"A":150,"F":74,"D":71,"C":54,"B":44,"C+":44,"AW":43,"W":39,"B+":39,"D+":34},"major_breakdown":{"BMED":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"CSCI":{"students":458,"unique_students":458,"mean_grade":2.63,"pass_rate":79.3,"fail_rate":9.6,"waw_rate":11.1,"grade_gte_2":279},"CSIT":{"students":86,"unique_students":86,"mean_grade":1.66,"pass_rate":54.7,"fail_rate":26.7,"waw_rate":18.6,"grade_gte_2":32},"GDES":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":7,"unique_students":7,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":14.3,"waw_rate":85.7,"grade_gte_2":0},"MATH":{"students":35,"unique_students":35,"mean_grade":2.31,"pass_rate":68.6,"fail_rate":17.1,"waw_rate":14.3,"grade_gte_2":19},"PHYS":{"students":2,"unique_students":2,"mean_grade":2.5,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":1},"RTVF":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":809,"total_enrollments":809,"mean_grade":2.14,"mean_grade_letter":2.14,"pass_rate":58.1,"fail_rate":21.3,"waw_rate":20.6,"grade_gte_2":354,"grade_lt_2":455,"grade_distribution":{"A":174,"F":172,"W":88,"AW":79,"D":67,"B":54,"C":50,"D+":49,"C+":43,"B+":33},"major_breakdown":{"BENG":{"students":57,"unique_students":57,"mean_grade":2.24,"pass_rate":59.6,"fail_rate":17.5,"waw_rate":22.8,"grade_gte_2":25},"CENG":{"students":222,"unique_students":222,"mean_grade":2.59,"pass_rate":72.5,"fail_rate":14.9,"waw_rate":12.6,"grade_gte_2":134},"EENG":{"students":109,"unique_students":109,"mean_grade":1.97,"pass_rate":53.2,"fail_rate":24.8,"waw_rate":22.0,"grade_gte_2":47},"IENG":{"students":6,"unique_students":6,"mean_grade":4.0,"pass_rate":33.3,"fail_rate":0.0,"waw_rate":66.7,"grade_gte_2":2},"LENG":{"students":29,"unique_students":29,"mean_grade":2.24,"pass_rate":62.1,"fail_rate":24.1,"waw_rate":13.8,"grade_gte_2":13},"MENG":{"students":278,"unique_students":278,"mean_grade":1.72,"pass_rate":49.6,"fail_rate":27.0,"waw_rate":23.4,"grade_gte_2":89},"SURV":{"students":1,"unique_students":1,"mean_grade":3.3,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":1},"TENG":{"students":107,"unique_students":107,"mean_grade":2.21,"pass_rate":54.2,"fail_rate":18.7,"waw_rate":27.1,"grade_gte_2":43}}}],"CSCI300":[{"school":"SoAS","unique_students":474,"total_enrollments":474,"mean_grade":2.26,"mean_grade_letter":2.26,"pass_rate":67.9,"fail_rate":14.6,"waw_rate":17.5,"grade_gte_2":223,"grade_lt_2":251,"grade_distribution":{"A":92,"F":69,"D+":67,"C":48,"AW":44,"W":39,"D":32,"C+":31,"B":31,"B+":21},"major_breakdown":{"CSCI":{"students":404,"unique_students":404,"mean_grade":2.3,"pass_rate":68.1,"fail_rate":13.6,"waw_rate":18.3,"grade_gte_2":190},"CSIT":{"students":69,"unique_students":69,"mean_grade":2.02,"pass_rate":68.1,"fail_rate":20.3,"waw_rate":11.6,"grade_gte_2":33},"RTVF":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":261,"total_enrollments":261,"mean_grade":2.32,"mean_grade_letter":2.32,"pass_rate":67.0,"fail_rate":12.3,"waw_rate":20.7,"grade_gte_2":125,"grade_lt_2":136,"grade_distribution":{"A":50,"W":35,"F":32,"C":28,"D+":26,"D":24,"AW":19,"B+":17,"C+":17,"B":13},"major_breakdown":{"CENG":{"students":174,"unique_students":174,"mean_grade":2.42,"pass_rate":67.8,"fail_rate":13.2,"waw_rate":19.0,"grade_gte_2":90},"LENG":{"students":20,"unique_students":20,"mean_grade":2.45,"pass_rate":75.0,"fail_rate":5.0,"waw_rate":20.0,"grade_gte_2":10},"TENG":{"students":67,"unique_students":67,"mean_grade":1.99,"pass_rate":62.7,"fail_rate":11.9,"waw_rate":25.4,"grade_gte_2":25}}}],"CHEM160":[{"school":"SoAS","unique_students":314,"total_enrollments":314,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":73.2,"fail_rate":14.3,"waw_rate":12.4,"grade_gte_2":0,"grade_lt_2":314,"grade_distribution":{"Pass":230,"Fail":45,"AW":30,"W":9},"major_breakdown":{"BIOC":{"students":27,"unique_students":27,"mean_grade":0.0,"pass_rate":85.2,"fail_rate":3.7,"waw_rate":11.1,"grade_gte_2":0},"BIOL":{"students":9,"unique_students":9,"mean_grade":0.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0},"BMED":{"students":99,"unique_students":99,"mean_grade":0.0,"pass_rate":85.9,"fail_rate":7.1,"waw_rate":7.1,"grade_gte_2":0},"CSCI":{"students":53,"unique_students":53,"mean_grade":0.0,"pass_rate":56.6,"fail_rate":28.3,"waw_rate":15.1,"grade_gte_2":0},"CSIT":{"students":26,"unique_students":26,"mean_grade":0.0,"pass_rate":34.6,"fail_rate":26.9,"waw_rate":38.5,"grade_gte_2":0},"FDST":{"students":7,"unique_students":7,"mean_grade":0.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0},"GDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"NUTR":{"students":91,"unique_students":91,"mean_grade":0.0,"pass_rate":73.6,"fail_rate":16.5,"waw_rate":9.9,"grade_gte_2":0},"PREL":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":169,"total_enrollments":169,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":69.2,"fail_rate":18.3,"waw_rate":12.4,"grade_gte_2":0,"grade_lt_2":169,"grade_distribution":{"Pass":117,"Fail":31,"AW":18,"W":3},"major_breakdown":{"BENG":{"students":16,"unique_students":16,"mean_grade":0.0,"pass_rate":81.2,"fail_rate":12.5,"waw_rate":6.2,"grade_gte_2":0},"CENG":{"students":9,"unique_students":9,"mean_grade":0.0,"pass_rate":55.6,"fail_rate":44.4,"waw_rate":0.0,"grade_gte_2":0},"EENG":{"students":18,"unique_students":18,"mean_grade":0.0,"pass_rate":72.2,"fail_rate":22.2,"waw_rate":5.6,"grade_gte_2":0},"IENG":{"students":6,"unique_students":6,"mean_grade":0.0,"pass_rate":50.0,"fail_rate":16.7,"waw_rate":33.3,"grade_gte_2":0},"LENG":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":50.0,"fail_rate":50.0,"waw_rate":0.0,"grade_gte_2":0},"MENG":{"students":111,"unique_students":111,"mean_grade":0.0,"pass_rate":73.0,"fail_rate":12.6,"waw_rate":14.4,"grade_gte_2":0},"SURV":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":100.0,"waw_rate":0.0,"grade_gte_2":0},"TENG":{"students":6,"unique_students":6,"mean_grade":0.0,"pass_rate":16.7,"fail_rate":66.7,"waw_rate":16.7,"grade_gte_2":0}}},{"school":"SoFR","unique_students":39,"total_enrollments":39,"mean_grade":1.41,"mean_grade_letter":1.41,"pass_rate":74.4,"fail_rate":15.4,"waw_rate":10.3,"grade_gte_2":11,"grade_lt_2":28,"grade_distribution":{"D":14,"F":6,"C":5,"D+":4,"AW":4,"A":2,"C+":2,"B+":1,"B":1},"major_breakdown":{"FRAL":{"students":18,"unique_students":18,"mean_grade":1.06,"pass_rate":77.8,"fail_rate":11.1,"waw_rate":11.1,"grade_gte_2":2},"FRESL":{"students":21,"unique_students":21,"mean_grade":1.71,"pass_rate":71.4,"fail_rate":19.0,"waw_rate":9.5,"grade_gte_2":9}}},{"school":"SoPH","unique_students":25,"total_enrollments":25,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":96.0,"fail_rate":0.0,"waw_rate":4.0,"grade_gte_2":0,"grade_lt_2":25,"grade_distribution":{"Pass":24,"AW":1},"major_breakdown":{"PrPH":{"students":25,"unique_students":25,"mean_grade":0.0,"pass_rate":96.0,"fail_rate":0.0,"waw_rate":4.0,"grade_gte_2":0}}}],"CHEM200":[{"school":"SoAS","unique_students":485,"total_enrollments":485,"mean_grade":2.32,"mean_grade_letter":2.32,"pass_rate":73.8,"fail_rate":18.8,"waw_rate":7.4,"grade_gte_2":279,"grade_lt_2":206,"grade_distribution":{"A":106,"F":91,"B":52,"D":52,"B+":47,"C":41,"C+":33,"D+":27,"AW":19,"W":17},"major_breakdown":{"BIOC":{"students":69,"unique_students":69,"mean_grade":2.74,"pass_rate":82.6,"fail_rate":13.0,"waw_rate":4.3,"grade_gte_2":50},"BIOL":{"students":20,"unique_students":20,"mean_grade":1.82,"pass_rate":65.0,"fail_rate":25.0,"waw_rate":10.0,"grade_gte_2":9},"BMED":{"students":213,"unique_students":213,"mean_grade":2.39,"pass_rate":77.0,"fail_rate":16.9,"waw_rate":6.1,"grade_gte_2":129},"CHEM":{"students":6,"unique_students":6,"mean_grade":2.88,"pass_rate":83.3,"fail_rate":16.7,"waw_rate":0.0,"grade_gte_2":4},"CSCI":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":100.0,"waw_rate":0.0,"grade_gte_2":0},"FDST":{"students":15,"unique_students":15,"mean_grade":2.44,"pass_rate":66.7,"fail_rate":26.7,"waw_rate":6.7,"grade_gte_2":10},"IDES":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"NUTR":{"students":155,"unique_students":155,"mean_grade":2.08,"pass_rate":68.4,"fail_rate":21.9,"waw_rate":9.7,"grade_gte_2":74},"PHYS":{"students":4,"unique_students":4,"mean_grade":2.5,"pass_rate":75.0,"fail_rate":25.0,"waw_rate":0.0,"grade_gte_2":3}}},{"school":"SoEN","unique_students":234,"total_enrollments":234,"mean_grade":1.75,"mean_grade_letter":1.75,"pass_rate":64.1,"fail_rate":23.5,"waw_rate":12.4,"grade_gte_2":96,"grade_lt_2":138,"grade_distribution":{"F":55,"D":34,"C":33,"D+":20,"AW":20,"A":18,"B":18,"B+":15,"C+":12,"W":9},"major_breakdown":{"BENG":{"students":44,"unique_students":44,"mean_grade":2.37,"pass_rate":81.8,"fail_rate":11.4,"waw_rate":6.8,"grade_gte_2":29},"IENG":{"students":8,"unique_students":8,"mean_grade":2.51,"pass_rate":87.5,"fail_rate":0.0,"waw_rate":12.5,"grade_gte_2":5},"MENG":{"students":181,"unique_students":181,"mean_grade":1.55,"pass_rate":59.1,"fail_rate":27.6,"waw_rate":13.3,"grade_gte_2":62},"SURV":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoPH","unique_students":104,"total_enrollments":104,"mean_grade":2.95,"mean_grade_letter":2.95,"pass_rate":80.8,"fail_rate":15.4,"waw_rate":3.8,"grade_gte_2":84,"grade_lt_2":20,"grade_distribution":{"A":39,"C+":16,"B":12,"C":10,"B+":7,"F":7,"D":5,"D+":4,"W":3,"AW":1},"major_breakdown":{"PrPH":{"students":104,"unique_students":104,"mean_grade":2.95,"pass_rate":80.8,"fail_rate":15.4,"waw_rate":3.8,"grade_gte_2":84}}}],"MATH160":[{"school":"SoAS","unique_students":115,"total_enrollments":115,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":51.3,"fail_rate":25.2,"waw_rate":23.5,"grade_gte_2":0,"grade_lt_2":115,"grade_distribution":{"Pass":59,"Fail":29,"AW":25,"W":2},"major_breakdown":{"CSCI":{"students":94,"unique_students":94,"mean_grade":0.0,"pass_rate":53.2,"fail_rate":23.4,"waw_rate":23.4,"grade_gte_2":0},"CSIT":{"students":13,"unique_students":13,"mean_grade":0.0,"pass_rate":23.1,"fail_rate":46.2,"waw_rate":30.8,"grade_gte_2":0},"MATH":{"students":6,"unique_students":6,"mean_grade":0.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0},"PHYS":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":100.0,"waw_rate":0.0,"grade_gte_2":0},"RTVF":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":123,"total_enrollments":123,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":65.0,"fail_rate":13.8,"waw_rate":21.1,"grade_gte_2":0,"grade_lt_2":123,"grade_distribution":{"Pass":80,"AW":22,"Fail":17,"W":4},"major_breakdown":{"BENG":{"students":8,"unique_students":8,"mean_grade":0.0,"pass_rate":87.5,"fail_rate":0.0,"waw_rate":12.5,"grade_gte_2":0},"CENG":{"students":37,"unique_students":37,"mean_grade":0.0,"pass_rate":75.7,"fail_rate":16.2,"waw_rate":8.1,"grade_gte_2":0},"EENG":{"students":12,"unique_students":12,"mean_grade":0.0,"pass_rate":66.7,"fail_rate":8.3,"waw_rate":25.0,"grade_gte_2":0},"IENG":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":50.0,"fail_rate":0.0,"waw_rate":50.0,"grade_gte_2":0},"LENG":{"students":5,"unique_students":5,"mean_grade":0.0,"pass_rate":60.0,"fail_rate":40.0,"waw_rate":0.0,"grade_gte_2":0},"MENG":{"students":37,"unique_students":37,"mean_grade":0.0,"pass_rate":54.1,"fail_rate":16.2,"waw_rate":29.7,"grade_gte_2":0},"SURV":{"students":3,"unique_students":3,"mean_grade":0.0,"pass_rate":33.3,"fail_rate":0.0,"waw_rate":66.7,"grade_gte_2":0},"TENG":{"students":19,"unique_students":19,"mean_grade":0.0,"pass_rate":63.2,"fail_rate":10.5,"waw_rate":26.3,"grade_gte_2":0}}},{"school":"SoFR","unique_students":21,"total_enrollments":21,"mean_grade":1.14,"mean_grade_letter":1.14,"pass_rate":47.6,"fail_rate":38.1,"waw_rate":14.3,"grade_gte_2":6,"grade_lt_2":15,"grade_distribution":{"F":8,"D":3,"C+":3,"W":2,"B":1,"C":1,"AW":1,"B+":1,"D+":1},"major_breakdown":{"FRESL":{"students":21,"unique_students":21,"mean_grade":1.14,"pass_rate":47.6,"fail_rate":38.1,"waw_rate":14.3,"grade_gte_2":6}}}],"MATH161":[{"school":"SoAS","unique_students":123,"total_enrollments":123,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":48.8,"fail_rate":25.2,"waw_rate":26.0,"grade_gte_2":0,"grade_lt_2":123,"grade_distribution":{"Pass":60,"Fail":31,"AW":23,"W":9},"major_breakdown":{"CSCI":{"students":85,"unique_students":85,"mean_grade":0.0,"pass_rate":55.3,"fail_rate":24.7,"waw_rate":20.0,"grade_gte_2":0},"CSIT":{"students":33,"unique_students":33,"mean_grade":0.0,"pass_rate":33.3,"fail_rate":30.3,"waw_rate":36.4,"grade_gte_2":0},"GDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":50.0,"fail_rate":0.0,"waw_rate":50.0,"grade_gte_2":0},"MATH":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":50.0,"fail_rate":0.0,"waw_rate":50.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":121,"total_enrollments":121,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":51.2,"fail_rate":28.1,"waw_rate":20.7,"grade_gte_2":0,"grade_lt_2":121,"grade_distribution":{"Pass":62,"Fail":34,"AW":22,"W":3},"major_breakdown":{"BENG":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0},"CENG":{"students":21,"unique_students":21,"mean_grade":0.0,"pass_rate":57.1,"fail_rate":14.3,"waw_rate":28.6,"grade_gte_2":0},"EENG":{"students":19,"unique_students":19,"mean_grade":0.0,"pass_rate":42.1,"fail_rate":26.3,"waw_rate":31.6,"grade_gte_2":0},"IENG":{"students":4,"unique_students":4,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":75.0,"waw_rate":25.0,"grade_gte_2":0},"LENG":{"students":10,"unique_students":10,"mean_grade":0.0,"pass_rate":80.0,"fail_rate":20.0,"waw_rate":0.0,"grade_gte_2":0},"MENG":{"students":41,"unique_students":41,"mean_grade":0.0,"pass_rate":56.1,"fail_rate":31.7,"waw_rate":12.2,"grade_gte_2":0},"SURV":{"students":4,"unique_students":4,"mean_grade":0.0,"pass_rate":25.0,"fail_rate":25.0,"waw_rate":50.0,"grade_gte_2":0},"TENG":{"students":20,"unique_students":20,"mean_grade":0.0,"pass_rate":40.0,"fail_rate":35.0,"waw_rate":25.0,"grade_gte_2":0}}},{"school":"SoFR","unique_students":15,"total_enrollments":15,"mean_grade":2.7,"mean_grade_letter":2.7,"pass_rate":93.3,"fail_rate":6.7,"waw_rate":0.0,"grade_gte_2":11,"grade_lt_2":4,"grade_distribution":{"A":6,"D":2,"C":2,"F":1,"D+":1,"B":1,"B+":1,"C+":1},"major_breakdown":{"FRESL":{"students":15,"unique_students":15,"mean_grade":2.7,"pass_rate":93.3,"fail_rate":6.7,"waw_rate":0.0,"grade_gte_2":11}}}],"MATH210":[{"school":"SoAS","unique_students":629,"total_enrollments":629,"mean_grade":1.9,"mean_grade_letter":1.9,"pass_rate":46.6,"fail_rate":21.5,"waw_rate":31.8,"grade_gte_2":207,"grade_lt_2":422,"grade_distribution":{"F":135,"W":123,"A":78,"AW":77,"D":52,"B":38,"D+":34,"B+":33,"C":30,"C+":28,"IP":1},"major_breakdown":{"BMED":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"CHEM":{"students":3,"unique_students":3,"mean_grade":2.17,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":1},"CSCI":{"students":492,"unique_students":492,"mean_grade":1.9,"pass_rate":48.6,"fail_rate":23.0,"waw_rate":28.3,"grade_gte_2":174},"CSIT":{"students":95,"unique_students":95,"mean_grade":1.6,"pass_rate":33.7,"fail_rate":17.9,"waw_rate":48.4,"grade_gte_2":17},"GDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":6,"unique_students":6,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"MATH":{"students":21,"unique_students":21,"mean_grade":2.78,"pass_rate":81.0,"fail_rate":14.3,"waw_rate":4.8,"grade_gte_2":14},"NUTR":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"PHYS":{"students":6,"unique_students":6,"mean_grade":1.47,"pass_rate":33.3,"fail_rate":16.7,"waw_rate":50.0,"grade_gte_2":1},"RTVF":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":50.0,"waw_rate":50.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":821,"total_enrollments":821,"mean_grade":2.14,"mean_grade_letter":2.14,"pass_rate":54.7,"fail_rate":19.6,"waw_rate":25.6,"grade_gte_2":335,"grade_lt_2":486,"grade_distribution":{"F":161,"A":152,"W":111,"AW":99,"D":61,"D+":53,"B+":51,"C":48,"C+":42,"B":42,"IP":1},"major_breakdown":{"BENG":{"students":57,"unique_students":57,"mean_grade":2.49,"pass_rate":64.9,"fail_rate":19.3,"waw_rate":15.8,"grade_gte_2":32},"CENG":{"students":225,"unique_students":225,"mean_grade":2.4,"pass_rate":60.9,"fail_rate":18.7,"waw_rate":20.4,"grade_gte_2":109},"EENG":{"students":124,"unique_students":124,"mean_grade":2.04,"pass_rate":58.1,"fail_rate":18.5,"waw_rate":23.4,"grade_gte_2":49},"IENG":{"students":16,"unique_students":16,"mean_grade":2.85,"pass_rate":56.2,"fail_rate":12.5,"waw_rate":31.2,"grade_gte_2":9},"LENG":{"students":28,"unique_students":28,"mean_grade":2.02,"pass_rate":42.9,"fail_rate":17.9,"waw_rate":35.7,"grade_gte_2":8},"MENG":{"students":251,"unique_students":251,"mean_grade":1.92,"pass_rate":49.8,"fail_rate":20.7,"waw_rate":29.5,"grade_gte_2":87},"SURV":{"students":15,"unique_students":15,"mean_grade":1.02,"pass_rate":33.3,"fail_rate":26.7,"waw_rate":40.0,"grade_gte_2":2},"TENG":{"students":105,"unique_students":105,"mean_grade":1.97,"pass_rate":49.5,"fail_rate":21.0,"waw_rate":29.5,"grade_gte_2":39}}}],"MATH220":[{"school":"SoAS","unique_students":38,"total_enrollments":38,"mean_grade":3.1,"mean_grade_letter":3.1,"pass_rate":76.3,"fail_rate":0.0,"waw_rate":23.7,"grade_gte_2":21,"grade_lt_2":17,"grade_distribution":{"A":14,"W":5,"D":5,"AW":4,"B":4,"D+":3,"B+":2,"C+":1},"major_breakdown":{"CSCI":{"students":8,"unique_students":8,"mean_grade":2.38,"pass_rate":62.5,"fail_rate":0.0,"waw_rate":37.5,"grade_gte_2":2},"IDES":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"MATH":{"students":26,"unique_students":26,"mean_grade":3.3,"pass_rate":84.6,"fail_rate":0.0,"waw_rate":15.4,"grade_gte_2":18},"PHYS":{"students":2,"unique_students":2,"mean_grade":2.65,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":1}}},{"school":"SoEN","unique_students":644,"total_enrollments":644,"mean_grade":2.03,"mean_grade_letter":2.03,"pass_rate":52.3,"fail_rate":23.4,"waw_rate":24.2,"grade_gte_2":262,"grade_lt_2":382,"grade_distribution":{"F":151,"A":113,"W":93,"AW":63,"D":53,"C+":46,"B+":43,"C":31,"B":29,"D+":22},"major_breakdown":{"BENG":{"students":56,"unique_students":56,"mean_grade":2.5,"pass_rate":66.1,"fail_rate":14.3,"waw_rate":19.6,"grade_gte_2":30},"CENG":{"students":201,"unique_students":201,"mean_grade":2.44,"pass_rate":61.2,"fail_rate":16.4,"waw_rate":22.4,"grade_gte_2":105},"EENG":{"students":89,"unique_students":89,"mean_grade":1.7,"pass_rate":49.4,"fail_rate":29.2,"waw_rate":21.3,"grade_gte_2":30},"IENG":{"students":3,"unique_students":3,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":100.0,"waw_rate":0.0,"grade_gte_2":0},"LENG":{"students":28,"unique_students":28,"mean_grade":1.84,"pass_rate":42.9,"fail_rate":21.4,"waw_rate":35.7,"grade_gte_2":8},"MENG":{"students":174,"unique_students":174,"mean_grade":1.88,"pass_rate":47.7,"fail_rate":24.7,"waw_rate":27.6,"grade_gte_2":62},"SURV":{"students":11,"unique_students":11,"mean_grade":1.67,"pass_rate":45.5,"fail_rate":27.3,"waw_rate":27.3,"grade_gte_2":3},"TENG":{"students":82,"unique_students":82,"mean_grade":1.55,"pass_rate":40.2,"fail_rate":35.4,"waw_rate":24.4,"grade_gte_2":24}}}],"MATH225":[{"school":"SoAS","unique_students":565,"total_enrollments":565,"mean_grade":1.79,"mean_grade_letter":1.79,"pass_rate":48.1,"fail_rate":24.8,"waw_rate":27.1,"grade_gte_2":185,"grade_lt_2":380,"grade_distribution":{"F":140,"W":95,"A":72,"AW":58,"D":47,"D+":40,"C":32,"B":30,"C+":29,"B+":22},"major_breakdown":{"BMED":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"CHEM":{"students":3,"unique_students":3,"mean_grade":2.83,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":2},"CSCI":{"students":463,"unique_students":463,"mean_grade":1.77,"pass_rate":48.6,"fail_rate":26.1,"waw_rate":25.3,"grade_gte_2":151},"CSIT":{"students":67,"unique_students":67,"mean_grade":1.49,"pass_rate":40.3,"fail_rate":25.4,"waw_rate":34.3,"grade_gte_2":19},"FDST":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"GDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":4,"unique_students":4,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"MATH":{"students":17,"unique_students":17,"mean_grade":2.88,"pass_rate":82.4,"fail_rate":5.9,"waw_rate":11.8,"grade_gte_2":11},"NUTR":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"PHYS":{"students":5,"unique_students":5,"mean_grade":2.63,"pass_rate":60.0,"fail_rate":0.0,"waw_rate":40.0,"grade_gte_2":2},"RTVF":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":50.0,"waw_rate":50.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":597,"total_enrollments":597,"mean_grade":1.98,"mean_grade_letter":1.98,"pass_rate":58.5,"fail_rate":23.1,"waw_rate":18.4,"grade_gte_2":245,"grade_lt_2":352,"grade_distribution":{"F":138,"A":109,"W":63,"D":63,"AW":47,"C+":41,"D+":41,"C":39,"B":30,"B+":26},"major_breakdown":{"BENG":{"students":44,"unique_students":44,"mean_grade":2.59,"pass_rate":72.7,"fail_rate":15.9,"waw_rate":11.4,"grade_gte_2":26},"CENG":{"students":161,"unique_students":161,"mean_grade":2.34,"pass_rate":70.2,"fail_rate":15.5,"waw_rate":14.3,"grade_gte_2":87},"EENG":{"students":81,"unique_students":81,"mean_grade":1.88,"pass_rate":50.6,"fail_rate":27.2,"waw_rate":22.2,"grade_gte_2":29},"IENG":{"students":7,"unique_students":7,"mean_grade":2.72,"pass_rate":57.1,"fail_rate":14.3,"waw_rate":28.6,"grade_gte_2":4},"LENG":{"students":23,"unique_students":23,"mean_grade":1.47,"pass_rate":47.8,"fail_rate":21.7,"waw_rate":30.4,"grade_gte_2":6},"MENG":{"students":198,"unique_students":198,"mean_grade":1.61,"pass_rate":49.0,"fail_rate":29.8,"waw_rate":21.2,"grade_gte_2":61},"SURV":{"students":8,"unique_students":8,"mean_grade":1.26,"pass_rate":37.5,"fail_rate":25.0,"waw_rate":37.5,"grade_gte_2":1},"TENG":{"students":75,"unique_students":75,"mean_grade":1.96,"pass_rate":64.0,"fail_rate":22.7,"waw_rate":13.3,"grade_gte_2":31}}}],"MATH270":[{"school":"SoAS","unique_students":30,"total_enrollments":30,"mean_grade":3.57,"mean_grade_letter":3.57,"pass_rate":83.3,"fail_rate":3.3,"waw_rate":13.3,"grade_gte_2":24,"grade_lt_2":6,"grade_distribution":{"A":18,"B":3,"W":2,"AW":2,"B+":2,"F":1,"D":1,"C":1},"major_breakdown":{"CHEM":{"students":5,"unique_students":5,"mean_grade":4.0,"pass_rate":80.0,"fail_rate":0.0,"waw_rate":20.0,"grade_gte_2":4},"CSCI":{"students":4,"unique_students":4,"mean_grade":1.6,"pass_rate":25.0,"fail_rate":25.0,"waw_rate":50.0,"grade_gte_2":1},"IDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"MATH":{"students":20,"unique_students":20,"mean_grade":3.68,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":19}}},{"school":"SoEN","unique_students":571,"total_enrollments":571,"mean_grade":1.99,"mean_grade_letter":1.99,"pass_rate":59.2,"fail_rate":22.1,"waw_rate":18.7,"grade_gte_2":230,"grade_lt_2":341,"grade_distribution":{"F":126,"A":98,"W":66,"D":66,"D+":42,"AW":41,"B":37,"C+":35,"B+":30,"C":30},"major_breakdown":{"BEEENG":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"BENG":{"students":54,"unique_students":54,"mean_grade":2.2,"pass_rate":63.0,"fail_rate":20.4,"waw_rate":16.7,"grade_gte_2":25},"CENG":{"students":167,"unique_students":167,"mean_grade":2.32,"pass_rate":68.3,"fail_rate":15.0,"waw_rate":16.8,"grade_gte_2":77},"EENG":{"students":88,"unique_students":88,"mean_grade":1.57,"pass_rate":39.8,"fail_rate":33.0,"waw_rate":27.3,"grade_gte_2":28},"IENG":{"students":8,"unique_students":8,"mean_grade":2.73,"pass_rate":87.5,"fail_rate":0.0,"waw_rate":12.5,"grade_gte_2":6},"LENG":{"students":21,"unique_students":21,"mean_grade":2.21,"pass_rate":61.9,"fail_rate":19.0,"waw_rate":19.0,"grade_gte_2":10},"MENG":{"students":169,"unique_students":169,"mean_grade":1.77,"pass_rate":56.2,"fail_rate":23.1,"waw_rate":20.7,"grade_gte_2":57},"SURV":{"students":9,"unique_students":9,"mean_grade":0.17,"pass_rate":11.1,"fail_rate":66.7,"waw_rate":22.2,"grade_gte_2":0},"TENG":{"students":54,"unique_students":54,"mean_grade":2.13,"pass_rate":72.2,"fail_rate":22.2,"waw_rate":5.6,"grade_gte_2":27}}}],"MATH310":[{"school":"SoAS","unique_students":351,"total_enrollments":351,"mean_grade":2.03,"mean_grade_letter":2.03,"pass_rate":51.0,"fail_rate":17.1,"waw_rate":31.9,"grade_gte_2":124,"grade_lt_2":227,"grade_distribution":{"W":69,"F":60,"A":55,"AW":43,"D":32,"C":28,"D+":23,"B":15,"C+":15,"B+":11},"major_breakdown":{"CSCI":{"students":329,"unique_students":329,"mean_grade":2.03,"pass_rate":51.7,"fail_rate":17.0,"waw_rate":31.3,"grade_gte_2":117},"CSIT":{"students":8,"unique_students":8,"mean_grade":0.6,"pass_rate":25.0,"fail_rate":25.0,"waw_rate":50.0,"grade_gte_2":0},"GDES":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"MATH":{"students":10,"unique_students":10,"mean_grade":2.71,"pass_rate":70.0,"fail_rate":20.0,"waw_rate":10.0,"grade_gte_2":7},"RTVF":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":451,"total_enrollments":451,"mean_grade":2.01,"mean_grade_letter":2.01,"pass_rate":57.0,"fail_rate":20.8,"waw_rate":22.0,"grade_gte_2":178,"grade_lt_2":273,"grade_distribution":{"F":94,"A":68,"W":55,"D":45,"AW":44,"D+":34,"B":32,"C+":29,"B+":26,"C":23,"IP":1},"major_breakdown":{"BECCE":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0},"BENG":{"students":52,"unique_students":52,"mean_grade":1.96,"pass_rate":57.7,"fail_rate":19.2,"waw_rate":23.1,"grade_gte_2":20},"CENG":{"students":141,"unique_students":141,"mean_grade":2.31,"pass_rate":63.1,"fail_rate":18.4,"waw_rate":18.4,"grade_gte_2":66},"EENG":{"students":56,"unique_students":56,"mean_grade":1.61,"pass_rate":53.6,"fail_rate":25.0,"waw_rate":21.4,"grade_gte_2":16},"IENG":{"students":6,"unique_students":6,"mean_grade":1.3,"pass_rate":33.3,"fail_rate":33.3,"waw_rate":33.3,"grade_gte_2":1},"LENG":{"students":19,"unique_students":19,"mean_grade":1.52,"pass_rate":57.9,"fail_rate":26.3,"waw_rate":15.8,"grade_gte_2":7},"MENG":{"students":119,"unique_students":119,"mean_grade":2.01,"pass_rate":52.1,"fail_rate":19.3,"waw_rate":28.6,"grade_gte_2":46},"SURV":{"students":8,"unique_students":8,"mean_grade":1.68,"pass_rate":50.0,"fail_rate":25.0,"waw_rate":25.0,"grade_gte_2":2},"TENG":{"students":49,"unique_students":49,"mean_grade":1.97,"pass_rate":59.2,"fail_rate":24.5,"waw_rate":16.3,"grade_gte_2":20}}}],"MATH375":[{"school":"SoAS","unique_students":593,"total_enrollments":593,"mean_grade":2.28,"mean_grade_letter":2.28,"pass_rate":66.9,"fail_rate":17.0,"waw_rate":16.0,"grade_gte_2":289,"grade_lt_2":304,"grade_distribution":{"A":127,"F":101,"D":63,"W":56,"D+":45,"B+":44,"B":42,"C":40,"AW":39,"C+":36},"major_breakdown":{"CSCI":{"students":558,"unique_students":558,"mean_grade":2.25,"pass_rate":66.8,"fail_rate":17.2,"waw_rate":15.9,"grade_gte_2":269},"CSIT":{"students":5,"unique_students":5,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":40.0,"waw_rate":60.0,"grade_gte_2":0},"GDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":50.0,"waw_rate":50.0,"grade_gte_2":0},"MATH":{"students":24,"unique_students":24,"mean_grade":3.03,"pass_rate":87.5,"fail_rate":8.3,"waw_rate":4.2,"grade_gte_2":17},"PHYS":{"students":3,"unique_students":3,"mean_grade":3.13,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":3}}},{"school":"SoEN","unique_students":199,"total_enrollments":199,"mean_grade":2.14,"mean_grade_letter":2.14,"pass_rate":71.9,"fail_rate":17.1,"waw_rate":11.1,"grade_gte_2":91,"grade_lt_2":108,"grade_distribution":{"A":36,"F":34,"D":27,"D+":25,"C+":18,"AW":16,"B+":14,"B":12,"C":11,"W":6},"major_breakdown":{"BEMENG":{"students":1,"unique_students":1,"mean_grade":3.9,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":1},"BENG":{"students":4,"unique_students":4,"mean_grade":0.57,"pass_rate":25.0,"fail_rate":50.0,"waw_rate":25.0,"grade_gte_2":0},"CENG":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"MENG":{"students":193,"unique_students":193,"mean_grade":2.16,"pass_rate":73.1,"fail_rate":16.6,"waw_rate":10.4,"grade_gte_2":90}}}],"PHYS160":[{"school":"SoAS","unique_students":12,"total_enrollments":12,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":33.3,"fail_rate":8.3,"waw_rate":58.3,"grade_gte_2":0,"grade_lt_2":12,"grade_distribution":{"Pass":4,"AW":4,"W":3,"Fail":1},"major_breakdown":{"BMED":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"CSCI":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"MATH":{"students":3,"unique_students":3,"mean_grade":0.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0},"NUTR":{"students":3,"unique_students":3,"mean_grade":0.0,"pass_rate":33.3,"fail_rate":33.3,"waw_rate":33.3,"grade_gte_2":0},"PHYS":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":163,"total_enrollments":163,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":67.5,"fail_rate":17.8,"waw_rate":14.7,"grade_gte_2":0,"grade_lt_2":163,"grade_distribution":{"Pass":110,"Fail":29,"AW":17,"W":7},"major_breakdown":{"BENG":{"students":14,"unique_students":14,"mean_grade":0.0,"pass_rate":92.9,"fail_rate":7.1,"waw_rate":0.0,"grade_gte_2":0},"CENG":{"students":46,"unique_students":46,"mean_grade":0.0,"pass_rate":67.4,"fail_rate":17.4,"waw_rate":15.2,"grade_gte_2":0},"EENG":{"students":20,"unique_students":20,"mean_grade":0.0,"pass_rate":65.0,"fail_rate":15.0,"waw_rate":20.0,"grade_gte_2":0},"IENG":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":50.0,"fail_rate":50.0,"waw_rate":0.0,"grade_gte_2":0},"LENG":{"students":7,"unique_students":7,"mean_grade":0.0,"pass_rate":71.4,"fail_rate":14.3,"waw_rate":14.3,"grade_gte_2":0},"MENG":{"students":46,"unique_students":46,"mean_grade":0.0,"pass_rate":65.2,"fail_rate":23.9,"waw_rate":10.9,"grade_gte_2":0},"SURV":{"students":5,"unique_students":5,"mean_grade":0.0,"pass_rate":20.0,"fail_rate":20.0,"waw_rate":60.0,"grade_gte_2":0},"TENG":{"students":23,"unique_students":23,"mean_grade":0.0,"pass_rate":69.6,"fail_rate":13.0,"waw_rate":17.4,"grade_gte_2":0}}},{"school":"SoFR","unique_students":23,"total_enrollments":23,"mean_grade":0.97,"mean_grade_letter":0.97,"pass_rate":39.1,"fail_rate":39.1,"waw_rate":21.7,"grade_gte_2":4,"grade_lt_2":19,"grade_distribution":{"F":9,"D":4,"AW":3,"W":2,"B":2,"D+":1,"B+":1,"C+":1},"major_breakdown":{"FRAL":{"students":6,"unique_students":6,"mean_grade":0.33,"pass_rate":33.3,"fail_rate":66.7,"waw_rate":0.0,"grade_gte_2":0},"FRESL":{"students":17,"unique_students":17,"mean_grade":1.29,"pass_rate":41.2,"fail_rate":29.4,"waw_rate":29.4,"grade_gte_2":4}}}],"PHYS161":[{"school":"SoAS","unique_students":81,"total_enrollments":81,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":28.4,"fail_rate":34.6,"waw_rate":37.0,"grade_gte_2":0,"grade_lt_2":81,"grade_distribution":{"Fail":28,"Pass":23,"AW":21,"W":9},"major_breakdown":{"BMED":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"CSCI":{"students":50,"unique_students":50,"mean_grade":0.0,"pass_rate":34.0,"fail_rate":38.0,"waw_rate":28.0,"grade_gte_2":0},"CSIT":{"students":22,"unique_students":22,"mean_grade":0.0,"pass_rate":13.6,"fail_rate":36.4,"waw_rate":50.0,"grade_gte_2":0},"GDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"IDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0},"MATH":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"NUTR":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":50.0,"fail_rate":50.0,"waw_rate":0.0,"grade_gte_2":0},"PREL":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"RTVF":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":127,"total_enrollments":127,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":52.8,"fail_rate":22.8,"waw_rate":24.4,"grade_gte_2":0,"grade_lt_2":127,"grade_distribution":{"Pass":67,"Fail":29,"AW":23,"W":8},"major_breakdown":{"BENG":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":100.0,"waw_rate":0.0,"grade_gte_2":0},"CENG":{"students":21,"unique_students":21,"mean_grade":0.0,"pass_rate":42.9,"fail_rate":19.0,"waw_rate":38.1,"grade_gte_2":0},"EENG":{"students":30,"unique_students":30,"mean_grade":0.0,"pass_rate":73.3,"fail_rate":20.0,"waw_rate":6.7,"grade_gte_2":0},"IENG":{"students":3,"unique_students":3,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":33.3,"waw_rate":66.7,"grade_gte_2":0},"LENG":{"students":8,"unique_students":8,"mean_grade":0.0,"pass_rate":75.0,"fail_rate":12.5,"waw_rate":12.5,"grade_gte_2":0},"MENG":{"students":39,"unique_students":39,"mean_grade":0.0,"pass_rate":59.0,"fail_rate":20.5,"waw_rate":20.5,"grade_gte_2":0},"SURV":{"students":4,"unique_students":4,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":25.0,"waw_rate":75.0,"grade_gte_2":0},"TENG":{"students":21,"unique_students":21,"mean_grade":0.0,"pass_rate":33.3,"fail_rate":33.3,"waw_rate":33.3,"grade_gte_2":0}}},{"school":"SoFR","unique_students":20,"total_enrollments":20,"mean_grade":2.55,"mean_grade_letter":2.55,"pass_rate":90.0,"fail_rate":10.0,"waw_rate":0.0,"grade_gte_2":14,"grade_lt_2":6,"grade_distribution":{"A":7,"C":3,"F":2,"D":2,"D+":2,"B":2,"B+":1,"C+":1},"major_breakdown":{"FRAL":{"students":1,"unique_students":1,"mean_grade":2.0,"pass_rate":100.0,"fail_rate":0.0,"waw_rate":0.0,"grade_gte_2":1},"FRESL":{"students":19,"unique_students":19,"mean_grade":2.58,"pass_rate":89.5,"fail_rate":10.5,"waw_rate":0.0,"grade_gte_2":13}}}],"PHYS220":[{"school":"SoAS","unique_students":4,"total_enrollments":4,"mean_grade":0.0,"mean_grade_letter":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0,"grade_lt_2":4,"grade_distribution":{"W":4},"major_breakdown":{"CHEM":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"CSCI":{"students":2,"unique_students":2,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"GDES":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0}}},{"school":"SoEN","unique_students":654,"total_enrollments":654,"mean_grade":2.13,"mean_grade_letter":2.13,"pass_rate":61.0,"fail_rate":17.7,"waw_rate":21.3,"grade_gte_2":289,"grade_lt_2":365,"grade_distribution":{"F":116,"A":111,"W":78,"D":61,"AW":61,"C+":59,"C":52,"D+":49,"B":38,"B+":29},"major_breakdown":{"BECCE":{"students":1,"unique_students":1,"mean_grade":0.0,"pass_rate":0.0,"fail_rate":0.0,"waw_rate":100.0,"grade_gte_2":0},"BENG":{"students":58,"unique_students":58,"mean_grade":2.56,"pass_rate":75.9,"fail_rate":12.1,"waw_rate":12.1,"grade_gte_2":35},"CENG":{"students":175,"unique_students":175,"mean_grade":2.37,"pass_rate":68.6,"fail_rate":13.7,"waw_rate":17.7,"grade_gte_2":87},"EENG":{"students":102,"unique_students":102,"mean_grade":2.28,"pass_rate":56.9,"fail_rate":15.7,"waw_rate":27.5,"grade_gte_2":46},"IENG":{"students":12,"unique_students":12,"mean_grade":2.1,"pass_rate":75.0,"fail_rate":8.3,"waw_rate":16.7,"grade_gte_2":6},"LENG":{"students":22,"unique_students":22,"mean_grade":1.86,"pass_rate":40.9,"fail_rate":22.7,"waw_rate":36.4,"grade_gte_2":7},"MENG":{"students":208,"unique_students":208,"mean_grade":1.79,"pass_rate":54.8,"fail_rate":24.0,"waw_rate":21.2,"grade_gte_2":80},"SURV":{"students":8,"unique_students":8,"mean_grade":1.5,"pass_rate":25.0,"fail_rate":12.5,"waw_rate":62.5,"grade_gte_2":2},"TENG":{"students":68,"unique_students":68,"mean_grade":1.98,"pass_rate":63.2,"fail_rate":17.6,"waw_rate":19.1,"grade_gte_2":26}}}]};
+        
+        // Helper functions
+        function getPassRateColorClass(passRate) {
+            if (passRate >= 80) return 'pass-rate-high';
+            if (passRate >= 70) return 'pass-rate-good';
+            if (passRate >= 60) return 'pass-rate-medium';
+            if (passRate >= 50) return 'pass-rate-low';
+            return 'pass-rate-very-low';
+        }
+        
+        
+        function calculatePercentage(value, total) {
+            if (total === 0) return '0.0';
+            return ((value / total) * 100).toFixed(1);
+        }
+        
+        function showCourse(courseCode) {
+            // Update active button
+            document.querySelectorAll('.course-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.replace(' ', '') === courseCode) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update content
+            const courseDataArray = window.courseData[courseCode];
+            if (!courseDataArray) return;
+            
+            let html = '';
+            
+            // Create main section for the course
+            html += `
+                <div class="section-card">
+                    <h2>${courseCode.replace(/(\d+)/, ' $1')}</h2>
+                    
+                    <div class="summary-stats">
+            `;
+            
+            // Calculate total stats
+            let totalStudents = 0;
+            let totalPass = 0;
+            let totalFail = 0;
+            let totalWAW = 0;
+            let totalEnrollments = 0;
+            
+            courseDataArray.forEach(school => {
+                totalStudents += school.unique_students;
+                totalEnrollments += school.total_enrollments;
+                totalPass += Math.round(school.total_enrollments * school.pass_rate / 100);
+                totalFail += Math.round(school.total_enrollments * school.fail_rate / 100);
+                totalWAW += Math.round(school.total_enrollments * school.waw_rate / 100);
+            });
+            
+            const overallPassRate = totalEnrollments > 0 ? (totalPass / totalEnrollments * 100).toFixed(1) : 0;
+            const overallFailRate = totalEnrollments > 0 ? (totalFail / totalEnrollments * 100).toFixed(1) : 0;
+            const overallWAWRate = totalEnrollments > 0 ? (totalWAW / totalEnrollments * 100).toFixed(1) : 0;
+            
+            html += `
+                        <div class="stat-card">
+                            <div class="value">${totalStudents}</div>
+                            <div class="label">Total Students</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value" style="color: ${getPassRateColorClass(overallPassRate).replace('pass-rate-', '#')}">${overallPassRate}%</div>
+                            <div class="label">Overall Pass Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${overallFailRate}%</div>
+                            <div class="label">Overall Fail Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value">${overallWAWRate}%</div>
+                            <div class="label">Overall W/AW Rate</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Performance by School</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>School</th>
+                                <th>Students</th>
+                                <th>Mean Grade Value*</th>
+                                <th>Pass Rate</th>
+                                <th>Fail Rate</th>
+                                <th>W/AW Rate</th>
+                                <th>Grade ≥ 2.0</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Add rows for each school
+            courseDataArray.forEach(school => {
+                const meanGrade = school.mean_grade === 0 ? 'Pass/Fail' : school.mean_grade.toFixed(2);
+                html += `
+                    <tr>
+                        <td>${school.school}</td>
+                        <td>${school.unique_students}</td>
+                        <td>${meanGrade}</td>
+                        <td class="pass-rate-cell ${getPassRateColorClass(school.pass_rate)}">${school.pass_rate}%</td>
+                        <td>${school.fail_rate}%</td>
+                        <td>${school.waw_rate}%</td>
+                        <td>${school.grade_gte_2} (${calculatePercentage(school.grade_gte_2, school.total_enrollments)}%)</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">* Mean Grade Value is calculated using only valid letter grades (A, B+, B, C+, C, D+, D, F) and excludes W, AW, Pass, Fail, and IP grades.</p>
+            `;
+            
+            // Add major breakdown for each school
+            courseDataArray.forEach(school => {
+                if (Object.keys(school.major_breakdown).length > 0) {
+                    html += `
+                        <div class="major-table">
+                            <h4>${school.school} - Breakdown by Major</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Major</th>
+                                        <th>Students</th>
+                                        <th>Mean Grade Value</th>
+                                        <th>Pass Rate</th>
+                                        <th>Fail Rate</th>
+                                        <th>W/AW Rate</th>
+                                        <th>Grade ≥ 2.0</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    // Sort majors by number of students (descending)
+                    const sortedMajors = Object.entries(school.major_breakdown)
+                        .sort((a, b) => b[1].students - a[1].students);
+                    
+                    sortedMajors.forEach(([major, data]) => {
+                        const meanGrade = data.mean_grade === 0 ? 'Pass/Fail' : data.mean_grade.toFixed(2);
+                        html += `
+                            <tr>
+                                <td>${major}</td>
+                                <td>${data.students}</td>
+                                <td>${meanGrade}</td>
+                                <td class="pass-rate-cell ${getPassRateColorClass(data.pass_rate)}">${data.pass_rate}%</td>
+                                <td>${data.fail_rate}%</td>
+                                <td>${data.waw_rate}%</td>
+                                <td>${data.grade_gte_2} (${calculatePercentage(data.grade_gte_2, data.students)}%)</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Add chart
+            html += `
+                    <div class="chart-container">
+                        <canvas id="${courseCode}Chart"></canvas>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('course-sections').innerHTML = html;
+            
+            // Create chart
+            createCourseChart(courseCode, courseDataArray);
+        }
+        
+        function createCourseChart(courseCode, courseDataArray) {
+            const ctx = document.getElementById(`${courseCode}Chart`).getContext('2d');
+            
+            const labels = courseDataArray.map(school => school.school);
+            const passRates = courseDataArray.map(school => school.pass_rate);
+            const failRates = courseDataArray.map(school => school.fail_rate);
+            const wawRates = courseDataArray.map(school => school.waw_rate);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Pass Rate %',
+                            data: passRates,
+                            backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                        },
+                        {
+                            label: 'Fail Rate %',
+                            data: failRates,
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                        },
+                        {
+                            label: 'W/AW Rate %',
+                            data: wawRates,
+                            backgroundColor: 'rgba(255, 159, 64, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${courseCode.replace(/(\d+)/, ' $1')} - Performance by School`
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize with CSCI250
+        window.addEventListener('DOMContentLoaded', () => {
+            showCourse('CSCI250');
+        });
+    </script>
+</body>
+</html>
