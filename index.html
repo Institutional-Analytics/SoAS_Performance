@@ -515,17 +515,17 @@
                     <div class="risk-category-grid">
                         <div class="risk-category high-impact-low-performance">
                             <h4>🚨 Significant Underperformance</h4>
-                            <p>Courses where SoAS students significantly underperform SoEN students</p>
+                            <p>High-enrollment courses (30+ students) where SoAS significantly underperforms SoEN</p>
                             <div id="high-risk-courses"></div>
                         </div>
                         <div class="risk-category low-impact-low-performance">
-                            <h4>📊 Comparable Performance</h4>
-                            <p>Courses where SoAS and SoEN students perform similarly</p>
+                            <h4>📊 Comparable Performance / Low Enrollment</h4>
+                            <p>Similar performance OR low SoAS enrollment (<30 students)</p>
                             <div id="medium-risk-courses"></div>
                         </div>
                         <div class="risk-category high-performance">
                             <h4>🌟 Outperforming SoEN</h4>
-                            <p>Courses where SoAS students excel compared to SoEN students</p>
+                            <p>High-enrollment courses (30+ students) where SoAS excels</p>
                             <div id="low-risk-courses"></div>
                         </div>
                     </div>
@@ -915,7 +915,7 @@
                         data: comparisonData.map(c => ({
                             x: c.performanceGap,
                             y: c.soasEnrollment,
-                            r: 10 + Math.sqrt(c.totalEnrollment / 50) * 5 // Bubble size based on total enrollment
+                            r: 10 + Math.sqrt(c.totalEnrollment) * 3 // Minimum size 10, then scale up
                         })),
                         backgroundColor: comparisonData.map(c => {
                             if (c.performanceGap < -10) return 'rgba(220, 53, 69, 0.6)';
@@ -1019,10 +1019,17 @@
                 }
             });
             
-            // Categorize courses
-            const underperforming = comparisonData.filter(c => c.performanceGap < -10);
-            const comparable = comparisonData.filter(c => c.performanceGap >= -10 && c.performanceGap <= 10);
-            const outperforming = comparisonData.filter(c => c.performanceGap > 10);
+            // Categorize courses with enrollment consideration
+            const underperforming = comparisonData.filter(c => 
+                c.performanceGap < -10 && c.soasEnrollment >= 30  // Only consider if 30+ SoAS students
+            );
+            const comparable = comparisonData.filter(c => 
+                (c.performanceGap >= -10 && c.performanceGap <= 10) || 
+                c.soasEnrollment < 30  // Small enrollments go here regardless of gap
+            );
+            const outperforming = comparisonData.filter(c => 
+                c.performanceGap > 10 && c.soasEnrollment >= 30  // Only consider if 30+ SoAS students
+            );
             
             // Display categorized courses
             displayComparisonCategory('high-risk-courses', underperforming, 'underperforming');
@@ -1042,13 +1049,16 @@
             
             courses.forEach(course => {
                 const gapDisplay = (course.performanceGap > 0 ? '+' : '') + course.performanceGap.toFixed(1);
+                const enrollmentNote = course.soasEnrollment < 30 ? ' (Low enrollment)' : '';
+                const gapColor = course.soasEnrollment < 30 ? '#6c757d' : (course.performanceGap > 0 ? '#28a745' : '#dc3545');
+                
                 html += `
                     <div class="course-risk-item">
-                        <span><strong>${course.course}</strong></span>
+                        <span><strong>${course.course}</strong>${enrollmentNote}</span>
                         <div class="metrics">
-                            <span>SoAS: ${course.soasPassRate.toFixed(1)}%</span>
-                            <span>SoEN: ${course.soenPassRate.toFixed(1)}%</span>
-                            <span style="font-weight: bold; color: ${course.performanceGap > 0 ? '#28a745' : '#dc3545'}">Gap: ${gapDisplay}%</span>
+                            <span>SoAS: ${course.soasPassRate.toFixed(1)}% (${course.soasEnrollment} students)</span>
+                            <span>SoEN: ${course.soenPassRate.toFixed(1)}% (${course.soenEnrollment} students)</span>
+                            <span style="font-weight: bold; color: ${gapColor}">Gap: ${gapDisplay}%</span>
                         </div>
                     </div>
                 `;
@@ -1193,6 +1203,7 @@
                         <th>SoAS Pass Rate</th>
                         <th>Best Other School</th>
                         <th>Performance Gap</th>
+                        <th>SoAS Enrollment</th>
                         <th>SoAS W/AW Rate</th>
                     </tr>
                 </thead>
@@ -1219,8 +1230,10 @@
                         gapAnalysis.push({
                             course: courseCode,
                             soasRate: soasData.pass_rate,
+                            soasEnrollment: soasData.total_enrollments,
                             bestOtherSchool: bestOther.school,
                             bestOtherRate: bestOther.pass_rate,
+                            bestOtherEnrollment: bestOther.total_enrollments,
                             gap: gap,
                             soasWAW: soasData.waw_rate
                         });
@@ -1234,13 +1247,15 @@
             gapAnalysis.forEach(item => {
                 const gapClass = item.gap >= 0 ? 'gap-positive' : 'gap-negative';
                 const gapSymbol = item.gap >= 0 ? '+' : '';
+                const enrollmentNote = item.soasEnrollment < 30 ? ' ⚠️' : '';
                 
                 html += `
                     <tr>
                         <td><strong>${item.course}</strong></td>
-                        <td>${item.soasRate.toFixed(1)}%</td>
-                        <td>${item.bestOtherSchool}: ${item.bestOtherRate.toFixed(1)}%</td>
+                        <td>${item.soasRate.toFixed(1)}% (${item.soasEnrollment} students)</td>
+                        <td>${item.bestOtherSchool}: ${item.bestOtherRate.toFixed(1)}% (${item.bestOtherEnrollment} students)</td>
                         <td class="performance-gap ${gapClass}">${gapSymbol}${item.gap.toFixed(1)}%</td>
+                        <td>${item.soasEnrollment}${enrollmentNote}</td>
                         <td>${item.soasWAW.toFixed(1)}%</td>
                     </tr>
                 `;
